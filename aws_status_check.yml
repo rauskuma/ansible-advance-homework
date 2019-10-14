@@ -1,6 +1,6 @@
 ---
 - name: Playbook to check AWS instances status
-  hosts: tag_instance_filter_three_tier_app_psrivast_redhat_com
+  hosts: tag_instance_filter_three_tier_app_rauskuma_in_ibm_com
   gather_facts: false
   tasks:
   - name: Check the instances status
