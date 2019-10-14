@@ -21,7 +21,7 @@
         dest: /root/bin/jq
         mode: 0755
  
-   - name: get script order_svc.sh
+    - name: get script order_svc.sh
       get_url:
         url: "{{ param_repo_base }}/scripts/order_svc.sh"
         dest: /root/order_svc.sh
