@@ -1,0 +1,16 @@
+# Playbook to setup workstation, isolated node, setup openstack related components such as flavors, image, etc. and finally configure tower with playbooks, job templates  etc.
+
+- name: Main Playbook for configuring the environment for Homework Ansible Automation
+  hosts: localhost
+  tasks:
+
+  - name: Create workstation inventory
+    add_host:
+       name: "workstation-{{osp_GUID}}.rhpds.opentlc.com"
+       group: workstation
+
+
+- import_playbook: site-setup-workstation.yml
+- import_playbook: site-install-isolated-node.yml 
+- import_playbook: site-setup-openstack.yml
+- import_playbook: site-config-tower.yml

@@ -1,0 +1,14 @@
+- name: Playbook to create Open Stack network, router, Security Group and ssh key pair
+  hosts: localhost
+  tasks:
+
+  - name: Create workstation inventory
+    add_host:
+       name: "workstation-{{osp_GUID}}.rhpds.opentlc.com"
+       group: workstation
+
+- hosts: workstation
+  become: yes
+  roles:
+    - setup-openstack
+    

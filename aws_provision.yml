@@ -1,0 +1,55 @@
+---
+- name: Provision 3 tier app on AWS for PROD env
+  hosts: workstation
+  become: true
+  gather_facts: false
+  tasks:
+    - name: create bin directory
+      file:
+        path: /root/bin
+        state: directory
+
+    - name: get script common.sh
+      get_url:
+        url: "{{ param_repo_base }}/scripts/common.sh"
+        dest: /root/common.sh
+        mode: 0755
+
+    - name: get script jq
+      get_url: 
+        url: "{{ param_repo_base }}/scripts/jq-linux64"
+        dest: /root/bin/jq
+        mode: 0755
+ 
+   - name: get script order_svc.sh
+      get_url:
+        url: "{{ param_repo_base }}/scripts/order_svc.sh"
+        dest: /root/order_svc.sh
+        mode: 0755
+
+    - name: create credentials
+      copy:
+        content: |
+          export username={{ param_user }}
+          export password={{ param_password }}
+          export uri=https://labs.opentlc.com
+        dest: /root/credential.rc
+        mode: 0755
+
+    # Fix the existing shell scripts to reference jq command with bin/jq
+    - name: fix scripts to reference jq command with bin jq
+      shell: "sed -i 's/ jq/ bin\\/jq/g' {{ item }}"
+      with_items:
+        - /root/common.sh
+        - /root/order_svc.sh
+
+    # Using this script will always deploy environments in the us-east-1 region.
+    - name: order 3 tier app service on opentlc
+      shell: source /root/credential.rc; ./order_svc.sh -y -c 'OPENTLC Automation' -i 'Ansible Advanced - Three Tier App' -t 1 -d 'dialog_expiration=7;region=na;nodes=1;dialog_runtime=8'
+      args:
+        chdir: /root
+
+    # sometimes deployment takes 10+ minutes.
+    - name: Wait for mail
+      pause:
+        minutes: 20
