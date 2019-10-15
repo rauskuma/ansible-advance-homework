@@ -2,40 +2,49 @@
   gather_facts: false
   tasks:
   - name: Create In-memory Inventory
-    add_host: 
-      name: workstation-{{osp_GUID}}.rhpds.opentlc.com
+    add_host:
+      name: workstation-{{OSP_GUID}}.rhpds.opentlc.com
       group: workstation
       ansible_ssh_private_key_file: ~/.ssh/openstack.pem
       ansible_ssh_user: cloud-user
- 
+
 - hosts: workstation
   gather_facts: false
   tasks:
-  - name: OpenStack servers
+  - name: Get OpenStack servers info
     os_server_facts:
       cloud: ospcloud
       server: 'frontend'
     register: openstack_info
 
-  - name: Curl website
-    command: curl "http://{{item.public_v4}}"
+  - name: Check if QA env is deployed successfully
+    uri:
+      url: "http://{{item.public_v4}}"
+      return_content: yes
     with_items:
        - "{{ openstack_info.ansible_facts.openstack_servers }}"
     register: webpage
-  - name: Fail
-    fail:
-    when: "'Ansible' not in webpage.results[0].stdout" 
 
-  
+  - debug: var=webpage.results[0].content
+
+  - name: Fail if 'Ansible has done its job' is not in the page content in QA env
+    fail:
+    when: "'Ansible' not in webpage.results[0].content"
+
 - hosts: localhost
   gather_facts: false
   tasks:
-  - name: Curl website
-    command: curl "http://frontend1.{{ osp_GUID }}.example.opentlc.com"
+  - name: Check if Prod env is deployed successfully
+    uri:
+      url : "http://frontend1.{{ ANSIBLE_ADVANCE_GUID }}.example.opentlc.com"
+      return_content: yes
     register: webpage
-  - debug: var=webpage.stdout
-  - name: Fail
+
+  - debug: var=webpage.content
+
+  - name: Fail if 'Ansible has done its job' is not in the page content of Prod Env
     fail:
-    when: "'Ansible' not in webpage.stdout" 
+    when: "'Ansible' not in webpage.content"
+
   - name: Success
     debug: msg="Congrats Yours HW Assignment is completed"
