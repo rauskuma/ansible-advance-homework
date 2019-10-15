@@ -3,7 +3,7 @@
   gather_facts: false
   tasks:
 
-  - name: Use Uri module for writing smoke test.
+  - name: Check if Prod Env is deployed successfully.
     uri:
       url: "http://{{ item }}"
       return_content: yes
